@@ -2,12 +2,14 @@
 #include <iostream>
 #include "SDL.h"
 
-Game::Game(std::size_t grid_width, std::size_t grid_height)
+Game::Game(std::size_t grid_width, std::size_t grid_height, std::size_t num_ob)
     : snake(grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
-      random_h(0, static_cast<int>(grid_height - 1)) {
+      random_h(0, static_cast<int>(grid_height - 1)),
+      random_ob(0, static_cast<int>(num_ob - 1)) {
   PlaceFood();
+  PlaceObstacles();
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -25,7 +27,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    renderer.Render(snake, food, obstacles);
 
     frame_end = SDL_GetTicks();
 
@@ -50,19 +52,38 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 }
 
-void Game::PlaceFood() {
+void Game::PlaceObstacles() {
   int x, y;
-  while (true) {
+  SDL_Point  ob;
+  int num = random_ob(engine);
+  int cnt = 0;
+  while (cnt < num) {
     x = random_w(engine);
     y = random_h(engine);
     // Check that the location is not occupied by a snake item before placing
-    // food.
+    // obstacles.
     if (!snake.SnakeCell(x, y)) {
-      food.x = x;
-      food.y = y;
-      return;
+      ob.x = x;
+      ob.y = y;
+      obstacles.emplace_back(std::move(ob));
+      cnt += 1;
     }
   }
+}
+
+void Game::PlaceFood() {
+    int x, y;
+    while (true) {
+        x = random_w(engine);
+        y = random_h(engine);
+        // Check that the location is not occupied by a snake item before placing
+        // food.
+        if (!snake.SnakeCell(x, y)) {
+            food.x = x;
+            food.y = y;
+            return;
+        }
+    }
 }
 
 void Game::Update() {
@@ -77,10 +98,19 @@ void Game::Update() {
   if (food.x == new_x && food.y == new_y) {
     score++;
     PlaceFood();
+
     // Grow snake and increase speed.
     snake.GrowBody();
     snake.speed += 0.02;
   }
+
+  // Check if there's obstacles over here
+  for(auto& ob : obstacles) {
+      if (ob.x == new_x && ob.y == new_y) {
+          snake.alive = false;
+      }
+  }
+
 }
 
 int Game::GetScore() const { return score; }
