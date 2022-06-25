@@ -4,12 +4,17 @@
 
 Game::Game(std::size_t grid_width, std::size_t grid_height, std::size_t num_ob)
     : snake(grid_width, grid_height),
+      computer_snake(grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
       random_h(0, static_cast<int>(grid_height - 1)),
-      random_ob(0, static_cast<int>(num_ob - 1)) {
+      random_ob(1, static_cast<int>(num_ob - 1)) {
   PlaceFood();
+  PlaceDiffFood();
   PlaceObstacles();
+
+  computer_snake.update_food(food);
+  computer_snake.update_obstacles(obstacles);
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -27,7 +32,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food, obstacles);
+    renderer.Render(snake, computer_snake, food, obstacles);
 
     frame_end = SDL_GetTicks();
 
@@ -86,29 +91,71 @@ void Game::PlaceFood() {
     }
 }
 
+void Game::PlaceDiffFood() {
+    int x, y;
+    while (true) {
+        x = random_w(engine);
+        y = random_h(engine);
+        // Check that the location is not occupied by a snake item before placing
+        // food.
+        if (!snake.SnakeCell(x, y) && x!=food.x && x!=food.y) {
+            diff_food.x = x;
+            diff_food.y = y;
+            return;
+        }
+    }
+}
+
 void Game::Update() {
-  if (!snake.alive) return;
+  if (!snake.alive or !computer_snake.alive) return;
 
   snake.Update();
+  computer_snake.Update();
 
   int new_x = static_cast<int>(snake.head_x);
   int new_y = static_cast<int>(snake.head_y);
+
+  int comp_new_x = static_cast<int>(computer_snake.head_x);
+  int comp_new_y = static_cast<int>(computer_snake.head_y);
 
   // Check if there's food over here
   if (food.x == new_x && food.y == new_y) {
     score++;
     PlaceFood();
+    computer_snake.update_food(food);
+    computer_snake.update_obstacles(obstacles);
 
     // Grow snake and increase speed.
     snake.GrowBody();
     snake.speed += 0.02;
   }
 
+  /*// Check if there's another kind of food over here
+  if (diff_food.x == new_x && diff_food.y == new_y) {
+      score+= 2;
+      PlaceDiffFood();
+
+      // Grow snake and increase speed.
+      snake.GrowBody();
+      snake.speed += 0.04;
+  }*/
+
   // Check if there's obstacles over here
   for(auto& ob : obstacles) {
       if (ob.x == new_x && ob.y == new_y) {
           snake.alive = false;
       }
+  }
+
+  // Check if there's food over here
+  if (food.x == comp_new_x && food.y == comp_new_y) {
+      PlaceFood();
+      computer_snake.update_food(food);
+      computer_snake.update_obstacles(obstacles);
+
+      // Grow snake and increase speed.
+      computer_snake.GrowBody();
+      // computer_snake.speed += 0.02; TODO speed up later
   }
 
 }
