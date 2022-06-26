@@ -8,7 +8,6 @@ void Snake::Update() {
       static_cast<int>(
           head_y)};  // We first capture the head's cell before updating.
   UpdateHead();
-  std::cout << "snake: update head" << '\n';
   SDL_Point current_cell{
       static_cast<int>(head_x),
       static_cast<int>(head_y)};  // Capture the head's cell after updating.
@@ -17,7 +16,6 @@ void Snake::Update() {
   // cell.
   if (current_cell.x != prev_cell.x || current_cell.y != prev_cell.y) {
     UpdateBody(current_cell, prev_cell);
-    std::cout << "snake: update body" << '\n';
   }
 }
 
