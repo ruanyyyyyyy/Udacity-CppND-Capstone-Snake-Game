@@ -135,13 +135,13 @@ void ComputerSnake::UpdateHead() {
     // current_node = std::make_pair(static_cast<int>(head_x), static_cast<int>(head_y));
     auto next_node = path.back();
 
-    if(head_x < next_node.first) {
+    if(head_x < next_node.second) {
         direction = Direction::kRight;
-    } else if(head_x > next_node.first) {
+    } else if(head_x > next_node.second) {
         direction = Direction::kLeft;
     } else if (head_y < next_node.first) {
         direction = Direction::kDown;
-    } else if (head_y > next_node.second) {
+    } else if (head_y > next_node.first) {
         direction = Direction::kUp;
     }
 
@@ -149,22 +149,22 @@ void ComputerSnake::UpdateHead() {
     switch (direction) {
         case Direction::kUp:
             head_y -= speed;
-            if(head_y <= next_node.second) path.pop_back();
+            if(head_y <= next_node.first) path.pop_back();
             break;
 
         case Direction::kDown:
             head_y += speed;
-            if(head_y >= next_node.second) path.pop_back();
+            if(head_y >= next_node.first) path.pop_back();
             break;
 
         case Direction::kLeft:
             head_x -= speed;
-            if(head_x <= next_node.first) path.pop_back();
+            if(head_x <= next_node.second) path.pop_back();
             break;
 
         case Direction::kRight:
             head_x += speed;
-            if(head_x >= next_node.first) path.pop_back();
+            if(head_x >= next_node.second) path.pop_back();
             break;
     }
 
