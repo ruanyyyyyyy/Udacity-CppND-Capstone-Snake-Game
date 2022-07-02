@@ -6,7 +6,7 @@
 #include <iostream>
 
 
-AStar::AStar(int grid_width, int grid_height, std::vector<SDL_Point>& obstacles)
+AStar::AStar(int grid_width, int grid_height)
     : grid_width(grid_width),
       grid_height(grid_height) {
     nodes_.resize(grid_width);
@@ -18,6 +18,10 @@ AStar::AStar(int grid_width, int grid_height, std::vector<SDL_Point>& obstacles)
             nodes_[i][j].y = j;
         }
     }
+
+}
+
+void AStar::update_obs(std::vector<SDL_Point> & obstacles) {
     for(auto& ob : obstacles) {
         nodes_[ob.x][ob.y].state = State::kBlocked;
     }
@@ -28,7 +32,7 @@ bool AStar::CheckValidNode(int x, int y) {
     if (x < 0 || x >= grid_width || y < 0 || y >= grid_height) {
         return false;
     }
-    if(nodes_[x][y].visited == true || nodes_[x][y].state == State::kBlocked) {
+    if(nodes_[x][y].state == State::kVisited || nodes_[x][y].state == State::kBlocked) {
         return false;
     }
     return true;
@@ -46,7 +50,7 @@ void AStar::AddNeighbors(Node* current_node){
         new_x = current_node->x + det[0];
         new_y = current_node->y + det[1];
         if(CheckValidNode(new_x, new_y)) {
-            nodes_[new_x][new_y].visited = true;
+            nodes_[new_x][new_y].state = State::kVisited;
             nodes_[new_x][new_y].g_value = current_node->g_value + 1;
             nodes_[new_x][new_y].h_value = CalculateHValue(current_node);
             nodes_[new_x][new_y].parent = current_node;
@@ -64,6 +68,7 @@ Node* AStar::NextNode() {
 
 void AStar::ConstructFinalPath(Node* current_node) {
     // Implement your solution here.
+    path_found.clear();
     SDL_Point point;
     point.x = current_node->x;
     point.y = current_node->y;
@@ -90,7 +95,7 @@ void AStar::AStarSearch(SDL_Point& start, SDL_Point& food) {
     int y = start.y;
     Node* current_node = &nodes_[x][y];
     open_list.emplace_back(current_node);
-    current_node->visited = true;
+    current_node->state = State::kVisited;
 
     while(!open_list.empty()){
         current_node = NextNode();

@@ -20,20 +20,25 @@ void Snake::Update() {
 }
 
 void Snake::UpdateHead() {
+
   switch (direction) {
     case Direction::kUp:
+        std::cout << "Up" << '\n';
       head_y -= speed;
       break;
 
     case Direction::kDown:
+        std::cout << "Down" << '\n';
       head_y += speed;
       break;
 
     case Direction::kLeft:
+        std::cout << "Left" << '\n';
       head_x -= speed;
       break;
 
     case Direction::kRight:
+        std::cout << "Right" << '\n';
       head_x += speed;
       break;
   }

@@ -16,12 +16,15 @@ class Game {
            std::size_t target_frame_duration);
   int GetScore() const;
   int GetSize() const;
+  SDL_Point goal;
+  AStar astar;
 
  private:
   Snake snake;
   SDL_Point food;
   SDL_Point diff_food;
   std::vector<SDL_Point> obstacles;
+  std::vector<SDL_Point> path;
 
   std::random_device dev;
   std::mt19937 engine;
@@ -35,6 +38,7 @@ class Game {
   void Update();
   void PlaceObstacles();
   void PlaceDiffFood();
+  bool CheckObstacles(int x, int y);
 
   int grid_width;
   int grid_height;

@@ -48,7 +48,7 @@ void Renderer::Render(Snake const snake, SDL_Point const &food, std::vector<SDL_
   SDL_RenderClear(sdl_renderer);
 
   // Render A star path
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+  SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0x80, 0x00, 0xFF);
   for (SDL_Point const &point : path) {
       block.x = point.x * block.w;
       block.y = point.y * block.h;

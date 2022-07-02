@@ -2,10 +2,12 @@
 #include <iostream>
 #include "SDL.h"
 
+
 Game::Game(std::size_t grid_width, std::size_t grid_height, std::size_t num_ob)
     : grid_width(grid_width),
       grid_height(grid_height),
       snake(grid_width, grid_height),
+      astar(grid_width, grid_height),
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
       random_h(0, static_cast<int>(grid_height - 1)),
@@ -13,7 +15,7 @@ Game::Game(std::size_t grid_width, std::size_t grid_height, std::size_t num_ob)
   PlaceFood();
   //PlaceDiffFood();
   PlaceObstacles();
-
+  astar.update_obs(obstacles);
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -25,13 +27,11 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   int frame_count = 0;
   bool running = true;
 
-  AStar astar(grid_width, grid_height, obstacles);
-
   SDL_Point start_point;
-  start_point.x = snake.head_x;
-  start_point.y = snake.head_y;
+  start_point.x = static_cast<int>(snake.head_x);
+  start_point.y = static_cast<int>(snake.head_y);
   astar.AStarSearch(start_point, food);
-
+  path = astar.path_found;
 
   while (running) {
     frame_start = SDL_GetTicks();
@@ -83,14 +83,23 @@ void Game::PlaceObstacles() {
   }
 }
 
+bool Game::CheckObstacles(int x, int y) {
+    for(auto& ob : obstacles) {
+        if (ob.x == x && ob.y == y) {
+            return true;
+        }
+    }
+    return false;
+}
 void Game::PlaceFood() {
     int x, y;
     while (true) {
         x = random_w(engine);
         y = random_h(engine);
+
         // Check that the location is not occupied by a snake item before placing
         // food.
-        if (!snake.SnakeCell(x, y)) {
+        if (!snake.SnakeCell(x, y) && !CheckObstacles(x, y)) {
             food.x = x;
             food.y = y;
             return;
@@ -116,8 +125,27 @@ void Game::PlaceDiffFood() {
 void Game::Update() {
   if (!snake.alive) return;
 
-  snake.Update();
+  // determine if the snake head has arrived goal
+  if((snake.direction == Snake::Direction::kLeft || snake.direction == Snake::Direction::kRight) && static_cast<int>(snake.head_x) == goal.x
+              || (snake.direction == Snake::Direction::kUp || snake.direction == Snake::Direction::kDown) && static_cast<int>(snake.head_y) == goal.y
+      ) {
+      path.pop_back(); // will pop back the start position automatically
+  }
 
+  goal = path.back();
+  // determine the future direction based on goal
+  if(static_cast<int>(snake.head_x) > goal.x) {
+      snake.direction = Snake::Direction::kLeft;
+  } else if(goal.x > static_cast<int>(snake.head_x) ) {
+      snake.direction = Snake::Direction::kRight;
+  } else if(static_cast<int>(snake.head_y) > goal.y ) {
+      snake.direction = Snake::Direction::kUp;
+  } else if(goal.y > static_cast<int>(snake.head_y) )
+  {
+      snake.direction = Snake::Direction::kDown;
+  }
+
+  snake.Update();
 
   int new_x = static_cast<int>(snake.head_x);
   int new_y = static_cast<int>(snake.head_y);
@@ -130,6 +158,14 @@ void Game::Update() {
     // Grow snake and increase speed.
     snake.GrowBody();
     snake.speed += 0.02;
+
+    // update path
+    SDL_Point start_point;
+    start_point.x = static_cast<int>(snake.head_x);
+    start_point.y = static_cast<int>(snake.head_y);
+    astar.AStarSearch(start_point, food);
+    path = astar.path_found;
+
   }
 
   // Check if there's obstacles over here
