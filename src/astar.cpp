@@ -4,6 +4,7 @@
 #include "astar.h"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 
 AStar::AStar(int grid_width, int grid_height)
