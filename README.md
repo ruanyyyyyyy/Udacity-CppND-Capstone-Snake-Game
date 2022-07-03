@@ -17,6 +17,13 @@ The moving speed is not accurate 0.1 so this cause some trouble to predict the a
 Through careful observations, I realize we can use `static_cast<int>(head_x/y)` instead of `head_x/y` because we only care about the head's integer position in rendering and determining whether it arrives at the food.
 So I use `static_cast<int>(head_x/y)` to [infer the moving direction](https://github.com/ruanyyyyyyy/Udacity-CppND-Capstone-Snake-Game/blob/6ff9da71850e3e3b91d964df7d404ec7a46159a4/src/game.cpp#L123) and determine whether we should [pop out the previous goal (last grid in path) dynamically](https://github.com/ruanyyyyyyy/Udacity-CppND-Capstone-Snake-Game/blob/6ff9da71850e3e3b91d964df7d404ec7a46159a4/src/game.cpp#L117).
 
+## Project rubric
+- [x] README
+- [x] Compiling and Testing
+- [x] Loops, Functions, I/O [[link]](https://github.com/ruanyyyyyyy/Udacity-CppND-Capstone-Snake-Game/blob/8870374a820790b3790b715159c7e5335bc01f5b/src/main.cpp#L10)
+- [x] Object Oriented Programming [[link]](https://github.com/ruanyyyyyyy/Udacity-CppND-Capstone-Snake-Game/blob/8870374a820790b3790b715159c7e5335bc01f5b/src/astar.h#L31)
+
+
 ## Dependencies for Running Locally
 * cmake >= 3.7
   * All OSes: [click here for installation instructions](https://cmake.org/install/)
